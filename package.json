@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/leslieyjkim/tinyapp/issues"
   },
-  "homepage": "https://github.com/leslieyjkim/tinyapp#readme"
+  "homepage": "https://github.com/leslieyjkim/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
