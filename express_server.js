@@ -36,9 +36,6 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -74,4 +71,20 @@ app.post("/urls", (req, res) => {
   urlDatabase[randID] = longURL;
   console.log(urlDatabase);
   res.redirect(`/urls/${randID}`);
+});
+
+//delete
+
+app.post("/urls/:id/delete", (req, res) => {
+  const idToDelete = req.params.id;
+
+  if (urlDatabase[idToDelete]) {
+    delete urlDatabase[idToDelete];
+    return res.redirect("/urls");
+  }
+  res.status(404).send("URL not found");
+});
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });
