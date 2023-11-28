@@ -15,6 +15,8 @@ const generateRandomString = function () {
   return randomString;
 };
 
+// const generateRandomString = Math.random().toString(36).substring(2, 8);
+
 app.use(express.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs"); //Set ejs as the view engine. (npm install ejs)
@@ -73,6 +75,17 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${randID}`);
 });
 
+//update the existing id
+app.post("/urls/:id", (req, res) => {
+  const idToUpdate = req.params.id;
+  const newLongURL = req.body.newLongURL;
+
+  if (urlDatabase[idToUpdate]) {
+    urlDatabase[idToUpdate] = newLongURL;
+    return res.redirect("/urls");
+  }
+  res.status(404).send("URL not found");
+});
 //delete
 
 app.post("/urls/:id/delete", (req, res) => {
