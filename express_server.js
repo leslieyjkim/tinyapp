@@ -2,13 +2,24 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
-const generateRandomString = function () {};
+const generateRandomString = function () {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let randomString = "";
+
+  for (let i = 0; i < 6; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomString += characters.charAt(randomIndex);
+  }
+
+  return randomString;
+};
 
 app.use(express.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs"); //Set ejs as the view engine. (npm install ejs)
 
-const urlDatabase = {
+let urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
@@ -44,9 +55,23 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[req.params.id], //여길 수정했어. b2xVn2을 쓰기 위해 urlDatabase의 키밸류인 아이디 가져오려.
   };
   res.render("urls_show", templateVars);
+  return;
+});
+
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  // console.log(req.body); // Log the POST request body to the console
+  // res.send("Ok"); //
+  // longURL = user input
+  // id = output of random generator
+  // id : longURL -> store to DB, DB[id] = longURL
+  let longURL = req.body.longURL;
+  let randID = generateRandomString();
+  urlDatabase[randID] = longURL;
+  console.log(urlDatabase);
+  res.redirect(`/urls/${randID}`);
 });
