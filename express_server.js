@@ -32,7 +32,7 @@ app.get("/urls/:id", (req, res) => {
   console.log(req.params.id);
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id], //여길 수정했어. b2xVn2을 쓰기 위해 urlDatabase의 키밸류인 아이디 가져오려.
   };
   res.render("urls_show", templateVars);
 });
