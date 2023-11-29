@@ -18,14 +18,19 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
       <form class="form-inline ml-auto" method="POST" action="/login">
+        <% if (username) { %> -->
+        <!-- Display welcome message if username is available -->
+        <span class="mr-2 text-light">Welcome, <%= username %>!</span>
+        <% } else { %>
+        <!-- Display input field if username is not available -->
         <input
           class="form-control mr-sm-2"
           type="text"
           placeholder="Username"
           name="username"
-          required
         />
         <button type="button" class="btn btn-outline-dark">Login</button>
+        <% } %>
       </form>
     </div>
   </nav>
