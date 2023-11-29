@@ -98,6 +98,19 @@ app.post("/urls/:id/delete", (req, res) => {
   res.status(404).send("URL not found");
 });
 
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+
+  // Set a cookie named 'username' with the value submitted in the request body
+  res.cookie("username", username);
+
+  // Redirect the browser back to the /urls page
+  res.redirect("/urls");
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
