@@ -1,16 +1,15 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 const cookieParser = require("cookie-parser");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.set("view engine", "ejs"); //Set ejs as the view engine. (npm install ejs)
+app.set("view engine", "ejs");
 app.use((req, res, next) => {
-  // Pass the username to all views
   res.locals.username = req.cookies["username"];
   next();
-});
+}); // Pass the username to all views
 
 let urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
@@ -40,6 +39,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
 //1.urls_index
 app.get("/urls", (req, res) => {
   const templateVars = {
@@ -48,6 +48,7 @@ app.get("/urls", (req, res) => {
   };
   res.render("urls_index", templateVars);
 });
+
 //2.urls_new
 app.get("/urls/new", (req, res) => {
   const templateVars = {
@@ -74,7 +75,6 @@ app.get("/u/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
   // console.log(req.body); // Log the POST request body to the console
-  // res.send("Ok"); //
   // longURL = user input
   // id = output of random generator
   // id : longURL -> store to DB, DB[id] = longURL
@@ -107,12 +107,21 @@ app.post("/urls/:id/delete", (req, res) => {
   }
   res.status(404).send("URL not found");
 });
-
+//login
 app.post("/login", (req, res) => {
+  console.log(req.body.username);
   const username = req.body.username;
   // Set a cookie named 'username' with the value submitted in the request body
   res.cookie("username", username);
   // Redirect the browser back to the /urls page
+  res.redirect("/urls");
+});
+
+//logout
+app.post("/logout", (req, res) => {
+  //clear the 'username' cookie to log the user out
+  res.clearCookie("username");
+  //Redirect the user back to the /urls page
   res.redirect("/urls");
 });
 
