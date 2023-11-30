@@ -5,9 +5,13 @@ const cookieParser = require("cookie-parser");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.set("view engine", "ejs");
+app.set("view engine", "ejs"); // Set the view engine to EJS
+app.set("views", __dirname + "/views"); // Set the views directory
 app.use((req, res, next) => {
-  res.locals.username = req.cookies["username"];
+  // res.locals.username = req.cookies["username"];
+  //Update the middleware that sets from above [res.locals.username] to belowset [res.locals.user] instead.
+  const userID = req.cookies["user_id"];
+  res.locals.user = users[userID];
   next();
 }); // Pass the username to all views
 
@@ -28,6 +32,20 @@ const generateRandomString = function () {
 };
 // const generateRandomString = Math.random().toString(36).substring(2, 8);
 
+//create a global object to store users
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -43,7 +61,8 @@ app.get("/hello", (req, res) => {
 //1.urls_index
 app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    // username: req.cookies["username"], //update this part to below
+    user: res.locals.user,
     urls: urlDatabase,
   };
   res.render("urls_index", templateVars);
@@ -52,7 +71,7 @@ app.get("/urls", (req, res) => {
 //2.urls_new
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    user: res.locals.user,
   };
   res.render("urls_new", templateVars);
 });
@@ -60,7 +79,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   console.log(req.params.id);
   const templateVars = {
-    username: req.cookies["username"],
+    user: res.locals.user,
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
   };
@@ -73,6 +92,15 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+// register (get request)
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+// login (get request)
+app.get("/login", (req, res) => {
+  res.render("login");
+});
 app.post("/urls", (req, res) => {
   // console.log(req.body); // Log the POST request body to the console
   // longURL = user input
@@ -109,20 +137,66 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 //login
 app.post("/login", (req, res) => {
-  console.log(req.body.username);
-  const username = req.body.username;
-  // Set a cookie named 'username' with the value submitted in the request body
-  res.cookie("username", username);
-  // Redirect the browser back to the /urls page
+  console.log(req.body.user);
+  const user = req.body.user;
+  // Set a cookie named 'user' with the value submitted in the request body
+  res.cookie("user", user);
   res.redirect("/urls");
 });
 
 //logout
-app.post("/logout", (req, res) => {
-  //clear the 'username' cookie to log the user out
-  res.clearCookie("username");
-  //Redirect the user back to the /urls page
+app.get("/logout", (req, res) => {
+  //clear the 'user' cookie to log the user out
+  res.clearCookie("user_id");
+  res.redirect("/login"); //Intuitive Interactions
+});
+
+//register
+app.post("/register", (req, res) => {
+  const { email, password } = req.body;
+  // Check if email or password is missing
+  if (!email || !password) {
+    res.status(400).send("Email and password are required");
+    return;
+  }
+  // Helper Function : Check if email already exists
+  const getUserByEmail = Object.values(users).find(
+    (user) => user.email === email
+  );
+  if (getUserByEmail) {
+    res.status(400).send("Email already registered");
+    return;
+  }
+
+  const userID = generateRandomString();
+  const newUser = {
+    id: userID,
+    email,
+    password, // Note: In a real application, this should be hashed and not stored in plain text
+  };
+
+  users[userID] = newUser; // Add the new user to the global users object
+  res.cookie("user_id", userID); // Set user_id cookie containing the new user's ID
   res.redirect("/urls");
+});
+
+// login
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(403).send("Email and password are required");
+    return;
+  }
+  // Helper Function : Check if user with email exists
+  const user = Object.values(users).find((user) => user.email === email);
+
+  // Check if the user exists and the password matches (simplified example)
+  if (user && user.password === password) {
+    res.cookie("user_id", user.id); // Set user_id cookie containing the user's ID
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("Invalid email or password"); // Handle invalid login credentials
+  }
 });
 
 app.listen(PORT, () => {

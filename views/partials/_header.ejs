@@ -1,44 +1,66 @@
-<header>
-  <nav class="navbar navbar-expand-md navbar-dark bg-success">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-toggle="collapse"
-      data-target="#navbarNavAltMarkup"
-      aria-controls="navbarNavAltMarkup"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-      </div>
-      <% if (username) { %>
-      <!-- Display welcome message if username is available -->
-      <div class="justify-content-end">
-        <span class="mr-2 text-light">Welcome, <%= username %>!</span>
-        <form class="form-inline ml-auto" method="POST" action="/logout">
-          <button type="submit" class="btn btn-outline-dark">Logout</button>
-        </form>
-      </div>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+      integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+      crossorigin="anonymous"
+    />
+    <title><%= locals.title? locals.title: "URL" %> - TinyApp Example</title>
+  </head>
 
-      <% } else { %>
-      <!-- Display input field if username is not available -->
-      <form class="form-inline ml-auto" method="POST" action="/login">
-        <input
-          class="form-control mr-sm-2"
-          type="text"
-          placeholder="Username"
-          name="username"
-        />
-        <button type="submit" class="btn btn-outline-dark">Login</button>
-        <!--button type should be'submit'-->
-      </form>
-      <% } %>
-    </div>
-  </nav>
-</header>
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-md navbar-dark bg-success">
+        <a class="navbar-brand" href="/urls">TinyApp</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNavAltMarkup"
+          aria-controls="navbarNavAltMarkup"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/urls">My URLs</a>
+            <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+          </div>
+          <% if (user) { %>
+          <!-- Display welcome message if username is available -->
+          <div class="ml-auto mr-4">
+            <!-- <form class="form-inline ml-auto" method="POST" action="/logout"> -->
+            <span class="mr-2 text-light"
+              >Logged In As: <%= user.email %>!</span
+            >
+            <!-- <button type="submit" class="btn btn-outline-dark">Logout</button> -->
+            <a href="/logout" class="btn btn-outline-dark">Logout</a>
+            <!-- </form> -->
+          </div>
+
+          <% } else { %>
+          <!-- Display input field if username is not available -->
+          <!-- <form class="form-inline ml-auto" method="POST" action="/login">
+            <input
+              class="form-control mr-sm-2"
+              type="text"
+              placeholder="Username"
+              name="user.name"
+            />
+            <button type="submit" class="btn btn-outline-dark">Login</button>
+          </form> -->
+          <div class="ml-auto mr-4">
+            <a href="/login" class="btn btn-outline-dark mr-2">Login</a>
+            <a href="/register" class="btn btn-outline-dark">Register</a>
+          </div>
+          <% } %>
+        </div>
+      </nav>
+    </header>
+  </body>
+</html>
