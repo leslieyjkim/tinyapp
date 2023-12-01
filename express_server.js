@@ -57,19 +57,29 @@ app.get("/hello", (req, res) => {
 
 //1.urls_index
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    user: res.locals.user,
-    urls: urlDatabase,
-  };
-  res.render("urls_index", templateVars);
+  //check if the user is not logged in
+  if (!res.locals.user) {
+    res.redirect("/login");
+  } else {
+    const templateVars = {
+      user: res.locals.user,
+      urls: urlDatabase,
+    };
+    res.render("urls_index", templateVars);
+  }
 });
 
 //2.urls_new
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    user: res.locals.user,
-  };
-  res.render("urls_new", templateVars);
+  // Check if the user is not logged in
+  if (!res.locals.user) {
+    res.redirect("/login");
+  } else {
+    const templateVars = {
+      user: res.locals.user,
+    };
+    res.render("urls_new", templateVars);
+  }
 });
 
 //3.urls_show
@@ -86,17 +96,37 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  const shortURL = req.params.id;
+  // Check if the shortURL exists in the database
+  if (urlDatabase[shortURL]) {
+    const longURL = urlDatabase[shortURL]; // Use req.params.id if you prefer
+    res.redirect(longURL);
+  } else {
+    // Short URL not found, send a relevant HTML error message
+    res
+      .status(404)
+      .send("<html><body><h1>Short URL Not Found</h1></body></html>");
+  }
 });
 
 // register (get request)
 app.get("/register", (req, res) => {
-  res.render("register");
+  if (res.locals.user) {
+    //check if the user is already logged in
+    res.redirect("/urls");
+  } else {
+    res.render("register");
+  }
 });
 
 // login (get request)
 app.get("/login", (req, res) => {
-  res.render("login");
+  if (res.locals.user) {
+    //if conditon means, check if the user is already logged in
+    res.redirect("/urls");
+  } else {
+    res.render("login");
+  }
 });
 
 //logout
@@ -106,11 +136,16 @@ app.get("/logout", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  let longURL = req.body.longURL;
-  let randID = generateRandomString();
-  urlDatabase[randID] = longURL;
-  console.log(urlDatabase);
-  res.redirect(`/urls/${randID}`);
+  // Check if the user is not logged in
+  if (!res.locals.user) {
+    res.status(401).send("You must be logged in to shorten URLs");
+  } else {
+    let longURL = req.body.longURL;
+    let randID = generateRandomString();
+    urlDatabase[randID] = longURL;
+    console.log(urlDatabase);
+    res.redirect(`/urls/${randID}`);
+  }
 });
 
 //update the existing id
