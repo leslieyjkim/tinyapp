@@ -5,15 +5,13 @@ const cookieParser = require("cookie-parser");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.set("view engine", "ejs"); // Set the view engine to EJS
-app.set("views", __dirname + "/views"); // Set the views directory
+app.set("view engine", "ejs");
+app.set("views", __dirname + "/views");
 app.use((req, res, next) => {
-  // res.locals.username = req.cookies["username"];
-  //Update the middleware that sets from above [res.locals.username] to belowset [res.locals.user] instead.
   const userID = req.cookies["user_id"];
   res.locals.user = users[userID];
   next();
-}); // Pass the username to all views
+});
 
 let urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
@@ -32,7 +30,6 @@ const generateRandomString = function () {
 };
 // const generateRandomString = Math.random().toString(36).substring(2, 8);
 
-//create a global object to store users
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -61,7 +58,6 @@ app.get("/hello", (req, res) => {
 //1.urls_index
 app.get("/urls", (req, res) => {
   const templateVars = {
-    // username: req.cookies["username"], //update this part to below
     user: res.locals.user,
     urls: urlDatabase,
   };
@@ -75,6 +71,7 @@ app.get("/urls/new", (req, res) => {
   };
   res.render("urls_new", templateVars);
 });
+
 //3.urls_show
 app.get("/urls/:id", (req, res) => {
   console.log(req.params.id);
@@ -101,11 +98,14 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   res.render("login");
 });
+
+//logout
+app.get("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/login");
+});
+
 app.post("/urls", (req, res) => {
-  // console.log(req.body); // Log the POST request body to the console
-  // longURL = user input
-  // id = output of random generator
-  // id : longURL -> store to DB, DB[id] = longURL
   let longURL = req.body.longURL;
   let randID = generateRandomString();
   urlDatabase[randID] = longURL;
@@ -124,8 +124,8 @@ app.post("/urls/:id", (req, res) => {
   }
   res.status(404).send("URL not found");
 });
-//delete
 
+//delete
 app.post("/urls/:id/delete", (req, res) => {
   const idToDelete = req.params.id;
 
@@ -134,21 +134,6 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.redirect("/urls");
   }
   res.status(404).send("URL not found");
-});
-//login
-app.post("/login", (req, res) => {
-  console.log(req.body.user);
-  const user = req.body.user;
-  // Set a cookie named 'user' with the value submitted in the request body
-  res.cookie("user", user);
-  res.redirect("/urls");
-});
-
-//logout
-app.get("/logout", (req, res) => {
-  //clear the 'user' cookie to log the user out
-  res.clearCookie("user_id");
-  res.redirect("/login"); //Intuitive Interactions
 });
 
 //register
@@ -172,11 +157,11 @@ app.post("/register", (req, res) => {
   const newUser = {
     id: userID,
     email,
-    password, // Note: In a real application, this should be hashed and not stored in plain text
+    password,
   };
 
-  users[userID] = newUser; // Add the new user to the global users object
-  res.cookie("user_id", userID); // Set user_id cookie containing the new user's ID
+  users[userID] = newUser;
+  res.cookie("user_id", userID);
   res.redirect("/urls");
 });
 
@@ -190,12 +175,11 @@ app.post("/login", (req, res) => {
   // Helper Function : Check if user with email exists
   const user = Object.values(users).find((user) => user.email === email);
 
-  // Check if the user exists and the password matches (simplified example)
   if (user && user.password === password) {
-    res.cookie("user_id", user.id); // Set user_id cookie containing the user's ID
+    res.cookie("user_id", user.id);
     res.redirect("/urls");
   } else {
-    res.status(403).send("Invalid email or password"); // Handle invalid login credentials
+    res.status(403).send("Invalid email or password");
   }
 });
 

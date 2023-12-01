@@ -34,26 +34,14 @@
           <% if (user) { %>
           <!-- Display welcome message if username is available -->
           <div class="ml-auto mr-4">
-            <!-- <form class="form-inline ml-auto" method="POST" action="/logout"> -->
             <span class="mr-2 text-light"
               >Logged In As: <%= user.email %>!</span
             >
-            <!-- <button type="submit" class="btn btn-outline-dark">Logout</button> -->
+
             <a href="/logout" class="btn btn-outline-dark">Logout</a>
-            <!-- </form> -->
           </div>
 
           <% } else { %>
-          <!-- Display input field if username is not available -->
-          <!-- <form class="form-inline ml-auto" method="POST" action="/login">
-            <input
-              class="form-control mr-sm-2"
-              type="text"
-              placeholder="Username"
-              name="user.name"
-            />
-            <button type="submit" class="btn btn-outline-dark">Login</button>
-          </form> -->
           <div class="ml-auto mr-4">
             <a href="/login" class="btn btn-outline-dark mr-2">Login</a>
             <a href="/register" class="btn btn-outline-dark">Register</a>

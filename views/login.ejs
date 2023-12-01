@@ -1,18 +1,21 @@
 <%- include('partials/_header', {title: "user Login"}) %>
-<h2>Login</h2>
-<form method="POST" action="/login">
-  <div>
-    <label for="email">Email address</label>
+
+<div>
+  <h2>Login</h2>
+  <form method="POST" action="/login">
+    <div>
+      <label for="email">Email address</label>
+      <br />
+      <input type="email" id="email" name="email" required />
+    </div>
     <br />
-    <input type="email" id="email" name="email" required />
-  </div>
-  <br />
-  <div>
-    <label for="password">Password</label>
+    <div>
+      <label for="password">Password</label>
+      <br />
+      <input type="password" id="password" name="password" required />
+    </div>
     <br />
-    <input type="password" id="password" name="password" required />
-  </div>
-  <br />
-  <button type="submit" class="btn btn-primary">Login</button>
-</form>
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+</div>
 <%- include('partials/_footer') %>
