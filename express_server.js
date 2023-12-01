@@ -12,15 +12,15 @@ app.use(
     keys: ["key1", "key2"],
   })
 );
-
-const getUserByEmail = function (email, database) {
-  for (const userId in database) {
-    if (database[userId].email === email) {
-      return database[userId];
-    }
-  }
-  return null;
-};
+const { getUserByEmail } = require("./helpers");
+// const getUserByEmail = function (email, database) {
+//   for (const userId in database) {
+//     if (database[userId].email === email) {
+//       return database[userId];
+//     }
+//   }
+//   return null;
+// };
 
 const generateRandomString = function () {
   const characters =
