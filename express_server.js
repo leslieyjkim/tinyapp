@@ -221,3 +221,6 @@ app.post("/login", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+//last version November 30, 23:40 status
+//however at the last commit, this command was running shown below
+// ./node_modules/.bin/nodemon -L express_server.js
