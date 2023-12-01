@@ -43,6 +43,17 @@ const users = {
   },
 };
 
+// Helper function to filter URLs for a specific user
+const urlsForUser = function (id) {
+  const userUrls = {};
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      userUrls[url] = urlDatabase[url];
+    }
+  }
+  return userUrls;
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -59,11 +70,18 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   //check if the user is not logged in
   if (!res.locals.user) {
-    res.redirect("/login");
+    // res.redirect("/login");
+    res
+      .status(401)
+      .send(
+        "<html><body><h1>Please log in or register to view your URLs</h1></body></html>"
+      );
   } else {
+    // Use the urlsForUser function to filter URLs for the logged-in user
+    const userUrls = urlsForUser(res.locals.user.id);
     const templateVars = {
       user: res.locals.user,
-      urls: urlDatabase,
+      urls: userUrls,
     };
     res.render("urls_index", templateVars);
   }
@@ -84,7 +102,6 @@ app.get("/urls/new", (req, res) => {
 
 //3.urls_show
 app.get("/urls/:id", (req, res) => {
-  console.log(req.params.id);
   const templateVars = {
     user: res.locals.user,
     id: req.params.id,
@@ -99,10 +116,10 @@ app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   // Check if the shortURL exists in the database
   if (urlDatabase[shortURL]) {
-    const longURL = urlDatabase[shortURL]; // Use req.params.id if you prefer
+    const longURL = urlDatabase[shortURL];
     res.redirect(longURL);
   } else {
-    // Short URL not found, send a relevant HTML error message
+    // Short URL not found
     res
       .status(404)
       .send("<html><body><h1>Short URL Not Found</h1></body></html>");
@@ -224,3 +241,6 @@ app.listen(PORT, () => {
 //last version November 30, 23:40 status
 //however at the last commit, this command was running shown below
 // ./node_modules/.bin/nodemon -L express_server.js
+
+// 2023-12-01 01:10, multiple terminals of Vscode caused port8080 conflict
+// because multiple terminals (./node_modules/.bin/nodemon -L express_server.js) are using same port 8080
