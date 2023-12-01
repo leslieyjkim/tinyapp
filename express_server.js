@@ -1,12 +1,11 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080;
+const bcrypt = require("bcryptjs");
 
 // const cookieParser = require("cookie-parser");
 // app.use(cookieParser());
 const cookieSession = require("cookie-session");
-
 app.use(
   cookieSession({
     name: "session",
@@ -14,10 +13,26 @@ app.use(
   })
 );
 
-app.set("view engine", "ejs");
-app.set("views", __dirname + "/views");
+const getUserByEmail = function (email, database) {
+  for (const userId in database) {
+    if (database[userId].email === email) {
+      return database[userId];
+    }
+  }
+  return null;
+};
 
-app.use(express.urlencoded({ extended: true }));
+const generateRandomString = function () {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let randomString = "";
+  for (let i = 0; i < 6; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomString += characters.charAt(randomIndex);
+  }
+  return randomString;
+};
+// const generateRandomString = Math.random().toString(36).substring(2, 8);
 
 const users = {
   userRandomID: {
@@ -31,31 +46,7 @@ const users = {
     password: "dishwasher-funk",
   },
 };
-const generateRandomString = function () {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let randomString = "";
-  for (let i = 0; i < 6; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    randomString += characters.charAt(randomIndex);
-  }
-  return randomString;
-};
-// const generateRandomString = Math.random().toString(36).substring(2, 8);
 
-const getUserByEmail = function (email, database) {
-  for (const userId in database) {
-    if (database[userId].email === email) {
-      return database[userId];
-    }
-  }
-  return null;
-};
-
-// let urlDatabase = {
-//   b2xVn2: "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com",
-// };
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -66,6 +57,12 @@ const urlDatabase = {
     userID: "aJ48lW",
   },
 };
+
+//
+app.set("view engine", "ejs");
+// app.set("views", __dirname + "/views");
+
+app.use(express.urlencoded({ extended: true }));
 
 //create function to filter URLs for specific user
 const urlsForUser = function (id) {
@@ -81,11 +78,9 @@ const urlsForUser = function (id) {
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
-
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
@@ -140,11 +135,10 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[shortURL].longURL;
   const shortURL = req.params.id;
-  // Check if the longURL exists in the database
+  const longURL = urlDatabase[shortURL].longURL;
   if (!longURL) {
-    res.status(404).send("URL Not Exist.");
+    res.status(404).send("Id does not exist");
   } else {
     res.redirect(longURL);
   }
@@ -160,8 +154,37 @@ app.get("/register", (req, res) => {
       urls: urlDatabase,
       user: users[req.session.user_ID],
     };
-    res.render("user_registration", templateVars);
+    res.render("register", templateVars);
   }
+});
+//register (Post)
+app.post("/register", (req, res) => {
+  const user_ID = generateRandomString();
+  // const { email, password } = req.body;
+  const user_email = req.body.email;
+  const user_password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(user_password, 10);
+  // Check if email or password is missing
+  if (!user_email || !user_password) {
+    return res.status(400).send("Email and password are required");
+  }
+
+  // By using Helper Function : Check if email already exists
+  if (getUserByEmail(user_email, users)) {
+    return res
+      .status(400)
+      .send("Email already registered, please try different email.");
+  }
+
+  const newUser = {
+    id: user_ID,
+    email: user_email,
+    password: hashedPassword,
+  };
+  users[user_ID] = newUser;
+
+  req.session.user_ID = user_ID;
+  res.redirect("/urls");
 });
 
 // login (get request)
@@ -172,15 +195,36 @@ app.get("/login", (req, res) => {
     res.redirect("/urls");
   } else {
     const templateVars = { urls: urlDatabase, user: users[user_ID] };
-    res.render("user_login", templateVars);
+    console.log(templateVars);
+    res.render("login", templateVars);
   }
 });
+// login (post)
+app.post("/login", (req, res) => {
+  const user_email = req.body.email;
+  const user_password = req.body.password;
+  const user = getUserByEmail(user_email, users);
 
-//logout
-// app.get("/logout", (req, res) => {
-//   res.clearCookie("user_ID");
-//   res.redirect("/login");
-// });
+  if (!user) {
+    res
+      .status(403)
+      .send(
+        "Oops! We couldn't locate that user. Please check the username and try again."
+      );
+    return;
+  }
+
+  if (!bcrypt.compareSync(user_password, user.password)) {
+    res
+      .status(403)
+      .send(
+        "Uh-oh! The password you entered is not quite right. Please double-check and try again."
+      );
+    return;
+  }
+  req.session.user_ID = user.id;
+  res.redirect("/urls");
+});
 
 //
 app.post("/urls", (req, res) => {
@@ -195,6 +239,7 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: user_ID,
   };
+  console.log(urlDatabase[shortURL]);
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -230,63 +275,6 @@ app.post("/urls/:id/delete", (req, res) => {
       .send("You don't have permission to delete this URL.");
   }
   delete urlDatabase[idToDelete];
-  res.redirect("/urls");
-});
-
-//register
-app.post("/register", (req, res) => {
-  const user_ID = generateRandomString();
-  // const { email, password } = req.body;
-  const user_email = req.body.email;
-  const user_password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(user_password, 10);
-  // Check if email or password is missing
-  if (!user_email || !user_password) {
-    return res.status(400).send("Email and password are required");
-  }
-
-  // By using Helper Function : Check if email already exists
-  if (getUserByEmail(user_email, users)) {
-    return res
-      .status(400)
-      .send("Email already registered, please try different email.");
-  }
-
-  const newUser = {
-    id: user_ID,
-    email: user_email,
-    password: hashedPassword,
-  };
-  users[user_ID] = newUser;
-
-  req.session.user_ID = user_ID;
-  res.redirect("/urls");
-});
-
-// login
-app.post("/login", (req, res) => {
-  const user_email = req.body.email;
-  const user_password = req.body.password;
-  const user = getUserByEmail(user_email, users);
-
-  if (!user) {
-    res
-      .status(403)
-      .send(
-        "Oops! We couldn't locate that user. Please check the username and try again."
-      );
-    return;
-  }
-
-  if (!bcrypt.compareSync(user_password, user.password)) {
-    res
-      .status(403)
-      .send(
-        "Uh-oh! The password you entered is not quite right. Please double-check and try again."
-      );
-    return;
-  }
-  req.session.user_ID = user.id;
   res.redirect("/urls");
 });
 
