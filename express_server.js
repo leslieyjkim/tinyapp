@@ -291,5 +291,5 @@ app.listen(PORT, () => {
 //however at the last commit, this command was running shown below
 // ./node_modules/.bin/nodemon -L express_server.js
 
-// 2023-12-01 01:10, multiple terminals of Vscode caused port8080 conflict
+// 2023-12-02 01:10, multiple terminals of Vscode caused port8080 conflict
 // because multiple terminals (./node_modules/.bin/nodemon -L express_server.js) are using same port 8080
