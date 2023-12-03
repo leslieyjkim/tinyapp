@@ -145,6 +145,41 @@ app.get("/u/:id", (req, res) => {
   }
 });
 
+//update longURL was provided from id(post request)
+app.post("/urls/:id", (req, res) => {
+  const idToUpdate = req.params.id;
+  const newLongUrl = req.body.longURL;
+  const user_ID = req.session.user_ID;
+  if (!user_ID) {
+    return res.status(403).send("Please log in if you want to see this URL.");
+  }
+  if (!urlDatabase[idToUpdate] || urlDatabase[idToUpdate].userID !== user_ID) {
+    return res.status(404).send("URL NOT Found/ Need permission to see this.");
+  }
+  urlDatabase[idToUpdate].longURL = newLongUrl;
+
+  res.redirect("/urls");
+});
+
+//delete from database
+app.post("/urls/:id/delete", (req, res) => {
+  const user_ID = req.session.user_ID;
+  const idToDelete = req.params.id;
+  if (!urlDatabase[idToDelete]) {
+    return res.status(404).send("URL not found.");
+  }
+  if (!user_ID) {
+    return res.status(403).send("You must be logged in to delete this URL.");
+  }
+  if (urlDatabase[idToDelete].userID !== user_ID) {
+    return res
+      .status(403)
+      .send("You don't have permission to delete this URL.");
+  }
+  delete urlDatabase[idToDelete];
+  res.redirect("/urls");
+});
+
 // register (get request)
 app.get("/register", (req, res) => {
   if (req.session.user_ID) {
@@ -242,41 +277,6 @@ app.post("/urls", (req, res) => {
   };
   console.log(urlDatabase[shortURL]);
   res.redirect(`/urls/${shortURL}`);
-});
-
-//update longURL was provided from id(post request)
-app.post("/urls/:id", (req, res) => {
-  const idToUpdate = req.params.id;
-  const newLongUrl = req.body.longURL;
-  const user_ID = req.session.user_ID;
-  if (!user_ID) {
-    return res.status(403).send("Please log in if you want to see this URL.");
-  }
-  if (!urlDatabase[idToUpdate] || urlDatabase[idToUpdate].userID !== user_ID) {
-    return res.status(404).send("URL NOT Found/ Need permission to see this.");
-  }
-  urlDatabase[idToUpdate].longURL = newLongUrl;
-
-  res.redirect("/urls");
-});
-
-//delete from database
-app.post("/urls/:id/delete", (req, res) => {
-  const user_ID = req.session.user_ID;
-  const idToDelete = req.params.id;
-  if (!urlDatabase[idToDelete]) {
-    return res.status(404).send("URL not found.");
-  }
-  if (!user_ID) {
-    return res.status(403).send("You must be logged in to delete this URL.");
-  }
-  if (urlDatabase[idToDelete].userID !== user_ID) {
-    return res
-      .status(403)
-      .send("You don't have permission to delete this URL.");
-  }
-  delete urlDatabase[idToDelete];
-  res.redirect("/urls");
 });
 
 //: delete cookie and logout successful!
