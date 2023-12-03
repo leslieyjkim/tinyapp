@@ -1,8 +1,10 @@
 //helper function
-const getUserByEmail = function (email, database) {
-  for (const userId in database) {
-    if (database[userId].email === email) {
-      return database[userId];
+const getUserByEmail = (emailToFind, usersDatabase) => {
+  for (const userKey in usersDatabase) {
+    //console.log("userKey:", userKey);
+    const currentUser = usersDatabase[userKey];
+    if (currentUser.email === emailToFind) {
+      return currentUser;
     }
   }
   return null;

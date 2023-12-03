@@ -1,7 +1,13 @@
 const express = require("express");
 const app = express();
 const PORT = 8080;
+const bcrypt = require("bcryptjs");
+app.set("view engine", "ejs");
+app.use(express.urlencoded({ extended: true }));
+//helpers
+const { getUserByEmail, generateRandomString } = require("./helpers");
 
+//cookie
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
@@ -12,20 +18,17 @@ app.use(
     keys: ["key1", "key2"],
   })
 );
-
-const bcrypt = require("bcryptjs");
-const { getUserByEmail, generateRandomString } = require("./helpers");
-
+//
 const usersDatabase = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+  user1: {
+    id: "user1",
+    email: "user1@example.com",
+    password: "111",
   },
-  user2RandomID: {
-    id: "user2RandomID",
+  user2: {
+    id: "user2",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: "222",
   },
 };
 const urlDatabase = {
@@ -38,29 +41,75 @@ const urlDatabase = {
     userID: "aJ48lW",
   },
 };
-//
-app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: true }));
 
 //create function to filter URLs for specific user
-const urlsForUser = function (id) {
-  const userURLs = {};
-  for (const shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === id) {
-      userURLs[shortURL] = urlDatabase[shortURL];
+const urlsForUser = (id, database) => {
+  let userUrls = {};
+  for (const shortURL in database) {
+    if (database[shortURL].userID === id) {
+      userUrls[shortURL] = database[shortURL];
     }
   }
-  return userURLs;
+  return userUrls;
 };
+
+// const urlsForUser = function (id) {
+//   const userURLs = {};
+//   for (const shortURL in urlDatabase) {
+//     if (urlDatabase[shortURL].userID === id) {
+//       userURLs[shortURL] = urlDatabase[shortURL];
+//     }
+//   }
+//   return userURLs;
+// };
+
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const userID = req.session.id;
+  if (userID) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
+
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
+// register (get request)
+app.get("/register", (req, res) => {
+  const templateVars = { user_id: null, user: null };
+  res.render("register", templateVars);
+});
+
+//register (Post request)
+app.post("/register", (req, res) => {
+  if (req.body.email === "" || req.body.password === "") {
+    return res.status(400).send("Email and password are required!");
+  }
+  for (const values of Object.values(usersDatabase)) {
+    if (
+      values.email.toLocaleLowerCase() === req.body.email.toLocaleLowerCase()
+    ) {
+      res.status(400).send("User already exists!");
+    }
+  }
+  let hash = bcrypt.hashSync(req.body.password, 10);
+  let id = generateRandomString();
+  const newUser = {
+    id: id,
+    email: req.body.email,
+    password: hash,
+  };
+  usersDatabase[id] = newUser;
+  req.session.id = id;
+  res.redirect("/urls");
+});
+
 //1.urls_index
 app.get("/urls", (req, res) => {
   const user_ID = req.session.user_ID;
@@ -115,45 +164,7 @@ app.get("/u/:id", (req, res) => {
     res.redirect(longURL);
   }
 });
-// register (get request)
-app.get("/register", (req, res) => {
-  if (req.session.user_ID) {
-    //check if the user is already logged in
-    res.redirect("/urls");
-  } else {
-    const templateVars = {
-      urls: urlDatabase,
-      user: usersDatabase[req.session.user_ID],
-    };
-    res.render("register", templateVars);
-  }
-});
-//register (Post)
-app.post("/register", (req, res) => {
-  const user_ID = generateRandomString();
-  // const { email, password } = req.body;
-  const user_email = req.body.email;
-  const user_password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(user_password, 10);
-  // Check if email or password is missing
-  if (!user_email || !user_password) {
-    return res.status(400).send("Email and password are required");
-  }
-  // By using Helper Function : Check if email already exists
-  if (getUserByEmail(user_email, usersDatabase)) {
-    return res
-      .status(400)
-      .send("Email already registered, please try different email.");
-  }
-  const newUser = {
-    id: user_ID,
-    email: user_email,
-    password: hashedPassword,
-  };
-  usersDatabase[user_ID] = newUser;
-  req.session.user_ID = user_ID;
-  res.redirect("/urls");
-});
+
 // login (get request)
 app.get("/login", (req, res) => {
   const user_ID = req.session.user_ID;
