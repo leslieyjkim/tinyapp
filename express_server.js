@@ -16,7 +16,7 @@ app.use(
 const bcrypt = require("bcryptjs");
 const { getUserByEmail, generateRandomString } = require("./helpers");
 
-const users = {
+const usersDatabase = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
@@ -40,8 +40,8 @@ const urlDatabase = {
 };
 //
 app.set("view engine", "ejs");
-// app.set("views", __dirname + "/views");
 app.use(express.urlencoded({ extended: true }));
+
 //create function to filter URLs for specific user
 const urlsForUser = function (id) {
   const userURLs = {};
@@ -74,7 +74,7 @@ app.get("/urls", (req, res) => {
   } else {
     // Use the urlsForUser function to filter URLs for the logged-in user
     const userURLs = urlsForUser(user_ID);
-    const templateVars = { urls: userURLs, user: users[user_ID] };
+    const templateVars = { urls: userURLs, user: usersDatabase[user_ID] };
     res.render("urls_index", templateVars);
   }
 });
@@ -83,7 +83,7 @@ app.get("/urls/new", (req, res) => {
   const user_ID = req.session.user_ID;
   // Check if the user is not logged in
   if (user_ID) {
-    const templateVars = { user: users[user_ID] };
+    const templateVars = { user: usersDatabase[user_ID] };
     res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
@@ -102,7 +102,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user: users[user_ID],
+    user: usersDatabase[user_ID],
   };
   res.render("urls_show", templateVars);
 });
@@ -123,7 +123,7 @@ app.get("/register", (req, res) => {
   } else {
     const templateVars = {
       urls: urlDatabase,
-      user: users[req.session.user_ID],
+      user: usersDatabase[req.session.user_ID],
     };
     res.render("register", templateVars);
   }
@@ -140,7 +140,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send("Email and password are required");
   }
   // By using Helper Function : Check if email already exists
-  if (getUserByEmail(user_email, users)) {
+  if (getUserByEmail(user_email, usersDatabase)) {
     return res
       .status(400)
       .send("Email already registered, please try different email.");
@@ -150,7 +150,7 @@ app.post("/register", (req, res) => {
     email: user_email,
     password: hashedPassword,
   };
-  users[user_ID] = newUser;
+  usersDatabase[user_ID] = newUser;
   req.session.user_ID = user_ID;
   res.redirect("/urls");
 });
@@ -161,7 +161,7 @@ app.get("/login", (req, res) => {
     //if conditon means, check if the user is already logged in
     res.redirect("/urls");
   } else {
-    const templateVars = { urls: urlDatabase, user: users[user_ID] };
+    const templateVars = { urls: urlDatabase, user: usersDatabase[user_ID] };
     console.log(templateVars);
     res.render("login", templateVars);
   }
@@ -170,7 +170,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const user_email = req.body.email;
   const user_password = req.body.password;
-  const user = getUserByEmail(user_email, users);
+  const user = getUserByEmail(user_email, usersDatabase);
   if (!user) {
     res
       .status(403)
