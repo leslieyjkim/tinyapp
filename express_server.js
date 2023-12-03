@@ -150,15 +150,22 @@ app.post("/urls/:id", (req, res) => {
   const idToUpdate = req.params.id;
   const newLongUrl = req.body.longURL;
   const user_ID = req.session.user_ID;
-  if (!user_ID) {
-    return res.status(403).send("Please log in if you want to see this URL.");
-  }
-  if (!urlDatabase[idToUpdate] || urlDatabase[idToUpdate].userID !== user_ID) {
-    return res.status(404).send("URL NOT Found/ Need permission to see this.");
-  }
-  urlDatabase[idToUpdate].longURL = newLongUrl;
 
-  res.redirect("/urls");
+  if (user_ID && user_ID === urlDatabase[idToUpdate].user_ID) {
+    urlDatabase[idToUpdate].longURL = newLongUrl;
+    res.redirect("/urls");
+  } else {
+    return res.status(401).send("Please log in if you want to see this URL.");
+  }
+  // if (!user_ID) {
+  //   return res.status(403).send("Please log in if you want to see this URL.");
+  // }
+  // if (!urlDatabase[idToUpdate] || urlDatabase[idToUpdate].userID !== user_ID) {
+  //   return res.status(404).send("URL NOT Found/ Need permission to see this.");
+  // }
+  // urlDatabase[idToUpdate].longURL = newLongUrl;
+
+  // res.redirect("/urls");
 });
 
 //delete from database
