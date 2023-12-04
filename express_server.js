@@ -110,35 +110,127 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-//1.urls_index
+//1.urls_index (get request)
 app.get("/urls", (req, res) => {
-  const user_ID = req.session.user_ID;
-  //check if the user is not logged in
-  if (!user_ID) {
-    res
-      .status(403)
-      .send(
-        "<html><body>Please log in or register to view your URLs</body></html>"
-      );
+  const templateVars = {
+    urls: urlDatabase,
+    user: usersDatabase[req.session.id],
+  };
+  const userID = req.session.id;
+  const user = urlsForUser(userID, urlDatabase);
+
+  if (!userID) {
+    //check if the user is not logged in
+    // res.status(403).send("<html><body>Please log in or register to view your URLs</body></html>");
+    return res.redirect("/login");
   } else {
     // Use the urlsForUser function to filter URLs for the logged-in user
-    const userURLs = urlsForUser(user_ID);
-    const templateVars = { urls: userURLs, user: usersDatabase[user_ID] };
+    const templateVars = {
+      urls: urlDatabase,
+      user: usersDatabase[req.session.id],
+    };
+    return res.render("urls_index", templateVars);
+  }
+});
+//urls_index (post request): Check if the user is not logged in
+app.post("/urls", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    user: usersDatabase[req.session.id],
+  };
+  if (req.session.id) {
+    const shortURL = generateRandomString();
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      userID: req.session.id,
+    };
+    console.log("URLDATABASE", urlDatabase);
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    //if (!user_ID)
+    console.log("error");
+    const errorMessage = "You must be logged in to shorten URLs";
     res.render("urls_index", templateVars);
   }
 });
-//2.urls_new
-app.get("/urls/new", (req, res) => {
-  const user_ID = req.session.user_ID;
-  // Check if the user is not logged in
-  if (user_ID) {
-    const templateVars = { user: usersDatabase[user_ID] };
-    res.render("urls_new", templateVars);
+
+//login (get request)
+app.get("/login", (req, res) => {
+  const userID = req.session.id;
+  if (userID) {
+    //check if the user is already logged in
+    res.redirect("/urls");
   } else {
-    res.redirect("/login");
+    const templateVars = { user: usersDatabase[req.session.id] };
+    console.log(templateVars);
+    res.render("login", templateVars);
   }
 });
-//3.urls_show
+
+//login (post request)
+app.post("/login", (req, res) => {
+  const user_email = req.body.username;
+  // const user_password = req.body.password;
+  const { email, password } = req.body;
+  const potencialUser = getUserByEmail(user_email, usersDatabase);
+  if (!potencialUser) {
+    return res
+      .status(400)
+      .send(
+        "Oops! We couldn't locate that user. Please check the username and try again."
+      );
+  }
+  if (!bcrypt.compareSync(req.body.password, potencialUser.password)) {
+    return res
+      .status(400)
+      .send(
+        "Uh-oh! The password you entered is not quite right. Please double-check and try again."
+      );
+  }
+  req.session.id = potencialUser.id;
+  return res.redirect("/urls");
+});
+
+//logout : delete cookie and logout successful!
+app.post("/logout", (req, res) => {
+  req.session = null;
+  res.redirect("/login");
+});
+
+//urls_new (get request)
+app.get("/urls/new", (req, res) => {
+  const templateVars = { user: usersDatabase[req.session.id] };
+  let loggedInUser = req.session.id;
+  // Check if the user is not logged in
+  if (!loggedInUser) {
+    res.status(403).send("Please Log in first");
+    return res.redirect("/login");
+  } else {
+    // if (user_ID)
+    return res.render("urls_new", templateVars);
+  }
+});
+
+//urls_show (get request)
+app.get("/u/:id", (req, res) => {
+  const templateVars = { user: usersDatabase[req.session["user_id"]] };
+  const longURL = urlDatabase[req.params.id].longURL;
+  const shortURL = req.params.id;
+  const userID = req.session.id;
+  let loggedInUser = req.session.id;
+
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("Page not found");
+  }
+  if (!loggedInUser) {
+    return res.status(403).send("Not authorized to view, please log in");
+  }
+  if (userID !== loggedInUser) {
+    return res.status(403).send("This is a Private Link");
+  }
+  res.redirect(longURL);
+});
+
 app.get("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   const user_ID = req.session.user_ID;
@@ -155,68 +247,7 @@ app.get("/urls/:id", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
-app.get("/u/:id", (req, res) => {
-  const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL].longURL;
-  if (!longURL) {
-    res.status(404).send("Id does not exist");
-  } else {
-    res.redirect(longURL);
-  }
-});
 
-// login (get request)
-app.get("/login", (req, res) => {
-  const user_ID = req.session.user_ID;
-  if (user_ID) {
-    //if conditon means, check if the user is already logged in
-    res.redirect("/urls");
-  } else {
-    const templateVars = { urls: urlDatabase, user: usersDatabase[user_ID] };
-    console.log(templateVars);
-    res.render("login", templateVars);
-  }
-});
-// login (post)
-app.post("/login", (req, res) => {
-  const user_email = req.body.email;
-  const user_password = req.body.password;
-  const user = getUserByEmail(user_email, usersDatabase);
-  if (!user) {
-    res
-      .status(403)
-      .send(
-        "Oops! We couldn't locate that user. Please check the username and try again."
-      );
-    return;
-  }
-  if (!bcrypt.compareSync(user_password, user.password)) {
-    res
-      .status(403)
-      .send(
-        "Uh-oh! The password you entered is not quite right. Please double-check and try again."
-      );
-    return;
-  }
-  req.session.user_ID = user.id;
-  res.redirect("/urls");
-});
-//
-app.post("/urls", (req, res) => {
-  // Check if the user is not logged in
-  const user_ID = req.session.user_ID;
-  if (!user_ID) {
-    res.status(401).send("You must be logged in to shorten URLs");
-    return;
-  }
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {
-    longURL: req.body.longURL,
-    userID: user_ID,
-  };
-  console.log(urlDatabase[shortURL]);
-  res.redirect(`/urls/${shortURL}`);
-});
 //update longURL was provided from id(post request)
 app.post("/urls/:id", (req, res) => {
   const idToUpdate = req.params.id;
@@ -249,11 +280,7 @@ app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[idToDelete];
   res.redirect("/urls");
 });
-//: delete cookie and logout successful!
-app.post("/logout", (req, res) => {
-  req.session = null;
-  res.redirect("/login");
-});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
