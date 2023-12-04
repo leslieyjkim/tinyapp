@@ -258,21 +258,41 @@ app.get("/urls/:id", (req, res) => {
 // });
 
 //delete from database
+// app.post("/urls/:id/delete", (req, res) => {
+//   const user_ID = req.session.user_ID;
+//   const idToDelete = req.params.id;
+//   if (!urlDatabase[idToDelete]) {
+//     return res.status(404).send("URL not found.");
+//   }
+//   if (!user_ID) {
+//     return res.status(403).send("You must be logged in to delete this URL.");
+//   }
+//   if (urlDatabase[idToDelete].userID !== user_ID) {
+//     return res
+//       .status(403)
+//       .send("You don't have permission to delete this URL.");
+//   }
+//   delete urlDatabase[idToDelete];
+//   res.redirect("/urls");
+// });
+
+//
 app.post("/urls/:id/delete", (req, res) => {
-  const user_ID = req.session.user_ID;
-  const idToDelete = req.params.id;
-  if (!urlDatabase[idToDelete]) {
-    return res.status(404).send("URL not found.");
+  const templateVars = { user: usersDatabase[req.session["user_id"]] };
+  const id = req.params.id;
+  delete urlDatabase[id];
+  let loggedInUser = req.session.id;
+  if (!loggedInUser) {
+    return res.status(403).send("You must be logged in first.");
+  } else {
+    return res.render("urls_new", templateVars);
   }
-  if (!user_ID) {
-    return res.status(403).send("You must be logged in to delete this URL.");
-  }
-  if (urlDatabase[idToDelete].userID !== user_ID) {
-    return res
-      .status(403)
-      .send("You don't have permission to delete this URL.");
-  }
-  delete urlDatabase[idToDelete];
+});
+
+app.post("/urls/:id/edit", (req, res) => {
+  const id = req.params.id;
+  const longURL = req.body.longURL;
+  urlDatabase[id].longURL = longURL;
   res.redirect("/urls");
 });
 
