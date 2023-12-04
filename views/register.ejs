@@ -1,22 +1,17 @@
 <%- include('partials/_header', {title: "user registration"}) %>
-
-<div style="margin-left: 20px; margin-top: 20px">
-  <h2>Create Account</h2>
+<main style="margin: 1em">
+  <h3>Register</h3>
   <form method="POST" action="/register">
-    <div>
-      <label for="email">Email address</label>
-      <br />
-      <input type="email" id="email" name="email" required />
-    </div>
-    <br />
-    <div>
-      <label for="password">Password</label>
-      <br />
-      <input type="password" id="password" name="password" required />
-    </div>
-    <br />
-    <button type="submit" class="btn btn-primary">Register</button>
+    <label for="email">Email:</label>
+    <input id="email" type="email" name="email" placeholder="email" />
+    <label for="password">Password:</label>
+    <input
+      id="password"
+      type="password"
+      name="password"
+      placeholder="password"
+    />
+    <button type="submit">Submit</button>
   </form>
-</div>
-
+</main>
 <%- include('partials/_footer') %>

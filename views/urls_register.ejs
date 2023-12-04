@@ -1,9 +1,9 @@
-<%- include('partials/_header', {title: "user Login"}) %>
+<%- include('partials/_header') %>
 <main style="margin: 1em">
-  <h3>LOGIN HERE:</h3>
-  <form method="POST" action="/login" name="login" type="login">
+  <h3>Register</h3>
+  <form method="POST" action="/register">
     <label for="email">Email:</label>
-    <input id="email" type="email" name="username" placeholder="email" />
+    <input id="email" type="email" name="email" placeholder="email" />
     <label for="password">Password:</label>
     <input
       id="password"
@@ -11,7 +11,7 @@
       name="password"
       placeholder="password"
     />
-    <button type="Submit">Login</button>
+    <button type="submit">Submit</button>
   </form>
 </main>
 <%- include('partials/_footer') %>
