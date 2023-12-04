@@ -223,45 +223,40 @@ app.get("/u/:id", (req, res) => {
     return res.status(404).send("Page not found");
   }
   if (!loggedInUser) {
-    return res.status(403).send("Not authorized to view, please log in");
+    return res.status(403).send("If you want see, please log in");
   }
   if (userID !== loggedInUser) {
-    return res.status(403).send("This is a Private Link");
+    return res.status(403).send("Private lipagenk");
   }
   res.redirect(longURL);
 });
 
+//(get request):display information about the specified URL on the client side.
 app.get("/urls/:id", (req, res) => {
-  const shortURL = req.params.id;
-  const user_ID = req.session.user_ID;
-  if (!user_ID) {
-    return res.status(403).send("Please log in if you want to see this URL.");
-  }
-  if (!urlDatabase[shortURL] || urlDatabase[shortURL].userID !== user_ID) {
-    return res.status(404).send("URL NOT Found/ Need permission to see this.");
-  }
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
-    user: usersDatabase[user_ID],
+    user_id: req.session.user_id,
+    longURL: urlDatabase[req.params.id],
+    user: usersDatabase[req.session.id],
   };
   res.render("urls_show", templateVars);
 });
 
 //update longURL was provided from id(post request)
-app.post("/urls/:id", (req, res) => {
-  const idToUpdate = req.params.id;
-  const newLongUrl = req.body.longURL;
-  const user_ID = req.session.user_ID;
-  if (!user_ID) {
-    return res.status(403).send("Please log in if you want to see this URL.");
-  }
-  if (!urlDatabase[idToUpdate] || urlDatabase[idToUpdate].userID !== user_ID) {
-    return res.status(404).send("URL NOT Found/ Need permission to see this.");
-  }
-  urlDatabase[idToUpdate].longURL = newLongUrl;
-  res.redirect("/urls");
-});
+// app.post("/urls/:id", (req, res) => {
+//   const idToUpdate = req.params.id;
+//   const newLongUrl = req.body.longURL;
+//   const user_ID = req.session.user_ID;
+//   if (!user_ID) {
+//     return res.status(403).send("Please log in if you want to see this URL.");
+//   }
+//   if (!urlDatabase[idToUpdate] || urlDatabase[idToUpdate].userID !== user_ID) {
+//     return res.status(404).send("URL NOT Found/ Need permission to see this.");
+//   }
+//   urlDatabase[idToUpdate].longURL = newLongUrl;
+//   res.redirect("/urls");
+// });
+
 //delete from database
 app.post("/urls/:id/delete", (req, res) => {
   const user_ID = req.session.user_ID;
