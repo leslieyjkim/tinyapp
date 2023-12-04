@@ -54,6 +54,7 @@ const urlsForUser = (id, database) => {
   return userUrls;
 };
 
+//main page without routes
 app.get("/", (req, res) => {
   const userID = req.session.id;
   if (userID) {
@@ -135,13 +136,15 @@ app.post("/urls", (req, res) => {
       longURL: req.body.longURL,
       userID: req.session.id,
     };
-    console.log("URLDATABASE", urlDatabase);
+    // console.log("URLDATABASE", urlDatabase);
     res.redirect(`/urls/${shortURL}`);
   } else {
     //if (!user_ID)
-    console.log("error");
-    const errorMessage = "You must be logged in to shorten URLs";
-    res.render("urls_index", templateVars);
+    const errorMessage = "Must be logged in to shorten URLs";
+    res.status(401).render("urls_error", {
+      user: usersDatabase[req.session.userID],
+      errorMessage,
+    });
   }
 });
 
@@ -203,6 +206,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 //urls_show (get request)
+//show list of urls if it is belonging to user logged-in
 app.get("/u/:id", (req, res) => {
   const templateVars = { user: usersDatabase[req.session["user_id"]] };
   const longURL = urlDatabase[req.params.id].longURL;
@@ -246,7 +250,7 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
-//edit button from Database
+//edit button from Database (update lognURL using Edit)
 app.post("/urls/:id/edit", (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
