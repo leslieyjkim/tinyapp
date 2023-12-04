@@ -201,9 +201,9 @@ app.post("/logout", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: usersDatabase[req.session.id] };
   let loggedInUser = req.session.id;
-  // Check if the user is not logged in
+  // Check if the user is not logged in tries to see
   if (!loggedInUser) {
-    res.status(403).send("Please Log in first");
+    res.status(403).send("Uh-oh! You need to Log in first, please.");
     return res.redirect("/login");
   } else {
     // if (user_ID)
