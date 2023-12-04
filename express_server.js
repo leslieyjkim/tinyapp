@@ -257,26 +257,7 @@ app.get("/urls/:id", (req, res) => {
 //   res.redirect("/urls");
 // });
 
-//delete from database
-// app.post("/urls/:id/delete", (req, res) => {
-//   const user_ID = req.session.user_ID;
-//   const idToDelete = req.params.id;
-//   if (!urlDatabase[idToDelete]) {
-//     return res.status(404).send("URL not found.");
-//   }
-//   if (!user_ID) {
-//     return res.status(403).send("You must be logged in to delete this URL.");
-//   }
-//   if (urlDatabase[idToDelete].userID !== user_ID) {
-//     return res
-//       .status(403)
-//       .send("You don't have permission to delete this URL.");
-//   }
-//   delete urlDatabase[idToDelete];
-//   res.redirect("/urls");
-// });
-
-//
+//delete button from Database
 app.post("/urls/:id/delete", (req, res) => {
   const templateVars = { user: usersDatabase[req.session["user_id"]] };
   const id = req.params.id;
@@ -289,6 +270,7 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
+//edit button from Database
 app.post("/urls/:id/edit", (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
@@ -299,8 +281,6 @@ app.post("/urls/:id/edit", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-//last version November 30, 23:40 status
-//however at the last commit, this command was running shown below
+
 // ./node_modules/.bin/nodemon -L express_server.js
 // 2023-12-01 01:10, multiple terminals of Vscode caused port8080 conflict
-// because multiple terminals (./node_modules/.bin/nodemon -L express_server.js) are using same port 8080
