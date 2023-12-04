@@ -253,7 +253,6 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.status(403).send("You must be logged in first.");
   } else {
     console.log("after delete -> res.render(urls_new...");
-    // return res.render("urls", templateVars);  -> old code
     return res.redirect("/urls"); // new code
   }
 });
