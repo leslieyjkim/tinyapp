@@ -53,16 +53,6 @@ const urlsForUser = (id, database) => {
   return userUrls;
 };
 
-// const urlsForUser = function (id) {
-//   const userURLs = {};
-//   for (const shortURL in urlDatabase) {
-//     if (urlDatabase[shortURL].userID === id) {
-//       userURLs[shortURL] = urlDatabase[shortURL];
-//     }
-//   }
-//   return userURLs;
-// };
-
 app.get("/", (req, res) => {
   const userID = req.session.id;
   if (userID) {
@@ -241,21 +231,6 @@ app.get("/urls/:id", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
-
-//update longURL was provided from id(post request)
-// app.post("/urls/:id", (req, res) => {
-//   const idToUpdate = req.params.id;
-//   const newLongUrl = req.body.longURL;
-//   const user_ID = req.session.user_ID;
-//   if (!user_ID) {
-//     return res.status(403).send("Please log in if you want to see this URL.");
-//   }
-//   if (!urlDatabase[idToUpdate] || urlDatabase[idToUpdate].userID !== user_ID) {
-//     return res.status(404).send("URL NOT Found/ Need permission to see this.");
-//   }
-//   urlDatabase[idToUpdate].longURL = newLongUrl;
-//   res.redirect("/urls");
-// });
 
 //delete button from Database
 app.post("/urls/:id/delete", (req, res) => {
