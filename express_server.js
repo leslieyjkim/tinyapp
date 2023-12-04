@@ -98,16 +98,14 @@ app.post("/register", (req, res) => {
     password: hash,
   };
   usersDatabase[id] = newUser;
+  console.log(`>>> new user ${req.body.email} registered`);
+  console.log(usersDatabase);
   req.session.id = id;
   res.redirect("/urls");
 });
 
 //1.urls_index (get request)
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    user: usersDatabase[req.session.id],
-  };
   const userID = req.session.id;
   const user = urlsForUser(userID, urlDatabase);
 
@@ -197,7 +195,7 @@ app.get("/urls/new", (req, res) => {
   let loggedInUser = req.session.id;
   // Check if the user is not logged in tries to see
   if (!loggedInUser) {
-    res.status(403).send("Uh-oh! You need to Log in first, please.");
+    // res.status(403).send("Uh-oh! You need to Log in first, please.");
     return res.redirect("/login");
   } else {
     // if (user_ID)
@@ -208,22 +206,26 @@ app.get("/urls/new", (req, res) => {
 //urls_show (get request)
 //show list of urls if it is belonging to user logged-in
 app.get("/u/:id", (req, res) => {
-  const templateVars = { user: usersDatabase[req.session["user_id"]] };
-  const longURL = urlDatabase[req.params.id]["longURL"];
-  const shortURL = req.params.id;
-  const userID = req.session.id;
   let loggedInUser = req.session.id;
-  console.log(shortURL); //debuggingpoint
-  if (!urlDatabase[shortURL]) {
-    return res.status(404).send("Page not found");
+  // login case
+  if (loggedInUser) {
+    const templateVars = { user: usersDatabase[req.session["user_id"]] };
+    const longURL = urlDatabase[req.params.id]["longURL"];
+    const shortURL = req.params.id;
+    const userID = req.session.id;
+
+    console.log(shortURL); //debuggingpoint
+    if (!urlDatabase[shortURL]) {
+      return res.status(404).send("Page not found");
+    }
+    if (userID !== loggedInUser) {
+      return res.status(403).send("Private lipagenk");
+    }
+    res.redirect(longURL);
+  } else {
+    // non login case
+    res.status(403).send("If you want see, please log in");
   }
-  if (!loggedInUser) {
-    return res.status(403).send("If you want see, please log in");
-  }
-  if (userID !== loggedInUser) {
-    return res.status(403).send("Private lipagenk");
-  }
-  res.redirect(longURL);
 });
 
 //(get request):display information about the specified URL on the client side.
