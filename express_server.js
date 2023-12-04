@@ -209,11 +209,11 @@ app.get("/urls/new", (req, res) => {
 //show list of urls if it is belonging to user logged-in
 app.get("/u/:id", (req, res) => {
   const templateVars = { user: usersDatabase[req.session["user_id"]] };
-  const longURL = urlDatabase[req.params.id].longURL;
+  const longURL = urlDatabase[req.params.id]["longURL"];
   const shortURL = req.params.id;
   const userID = req.session.id;
   let loggedInUser = req.session.id;
-
+  console.log(shortURL); //debuggingpoint
   if (!urlDatabase[shortURL]) {
     return res.status(404).send("Page not found");
   }
@@ -228,10 +228,12 @@ app.get("/u/:id", (req, res) => {
 
 //(get request):display information about the specified URL on the client side.
 app.get("/urls/:id", (req, res) => {
+  console.log(urlDatabase[req.params.id]); // debuggingpoint
+  console.log(req.params.id);
   const templateVars = {
     id: req.params.id,
     user_id: req.session.user_id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id]["longURL"],
     user: usersDatabase[req.session.id],
   };
   res.render("urls_show", templateVars);
@@ -239,14 +241,18 @@ app.get("/urls/:id", (req, res) => {
 
 //delete button from Database
 app.post("/urls/:id/delete", (req, res) => {
+  // why need templateVars here ?
   const templateVars = { user: usersDatabase[req.session["user_id"]] };
   const id = req.params.id;
   delete urlDatabase[id];
   let loggedInUser = req.session.id;
+  console.log(loggedInUser); //debuggingpoint
   if (!loggedInUser) {
     return res.status(403).send("You must be logged in first.");
   } else {
-    return res.render("urls_new", templateVars);
+    console.log("after delete -> res.render(urls_new...");
+    // return res.render("urls", templateVars);  -> old code
+    return res.redirect("/urls"); // new code
   }
 });
 
