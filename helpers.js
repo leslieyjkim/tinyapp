@@ -1,13 +1,12 @@
+const objhash = require("object-hash");
 //helper function
 const getUserByEmail = (emailToFind, usersDatabase) => {
-  for (const userKey in usersDatabase) {
-    //console.log("userKey:", userKey);
-    const currentUser = usersDatabase[userKey];
-    if (currentUser.email === emailToFind) {
-      return currentUser;
-    }
+  const hashedEmail = objhash(emailToFind);
+  if (hashedEmail in usersDatabase) {
+    return [usersDatabase[hashedEmail], hashedEmail]; //{email, password], hashedEmail
+  } else {
+    return [null, null];
   }
-  return null;
 };
 
 const generateRandomString = function () {
@@ -22,4 +21,11 @@ const generateRandomString = function () {
 };
 // const generateRandomString = Math.random().toString(36).substring(2, 8);
 
-module.exports = { getUserByEmail, generateRandomString };
+const urlsForUser = function (hashedemail, urlDatabase) {
+  if (urlDatabase[hashedemail]) {
+    return urlDatabase[hashedemail]; // {shortURL:longURL,...}
+  } else {
+    return null;
+  }
+};
+module.exports = { getUserByEmail, generateRandomString, urlsForUser };
