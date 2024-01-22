@@ -1,9 +1,10 @@
 const objhash = require("object-hash");
 //helper function
-const getUserByEmail = (emailToFind, usersDatabase) => {
+const getUserByEmail = (emailToFind, _usersDatabase) => {
+  //emailToFind는 unhashedEmail이야. 
   const hashedEmail = objhash(emailToFind);
-  if (hashedEmail in usersDatabase) {
-    return [usersDatabase[hashedEmail], hashedEmail]; //{email:, hashedPassword}, hashedEmail
+  if (hashedEmail in _usersDatabase) {
+    return [_usersDatabase[hashedEmail], hashedEmail]; //[ {email:, hashedPassword}, hashedEmail ]
   } else {
     return [null, null];
   }
@@ -20,4 +21,8 @@ const getUserUrls = function (hashedemail, urlDatabase) {
     return null;
   }
 };
-module.exports = { getUserByEmail, generateRandomString, getUserUrls };
+module.exports = {
+  getUserByEmail,
+  generateRandomString,
+  getUserUrls,
+};

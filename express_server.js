@@ -1,22 +1,24 @@
-const express = require("express");
-const app = express();
-const PORT = 8080;
+const express = require("express"); // express package
+const app = express(); // app instance start, instantiate : defined blueprint -> actual instance
+const PORT = 8080; // incoming port, should be localhost:8080
 const objhash = require("object-hash"); // for email hashing with deterministic way whereas bcryptjs is session dependant.
-app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: true }));
+app.set("view engine", "ejs"); // view -> use ejs, having embedding javascript
+app.use(express.urlencoded({ extended: true })); // ?
 
 const {
   getUserByEmail,
   generateRandomString,
   getUserUrls,
-} = require("./helpers");
+} = require("./helpers"); // import helper functions from helpers.js
 
-const { usersDatabase, urlDatabase } = require("./database");
+const { usersDatabase, urlDatabase } = require("./database"); // import database from database.js
 
-const cookieSession = require("cookie-session");
+const cookieSession = require("cookie-session"); // use cookie-session for cookie management during same session
+
+// cookie session config: name should be session -> req.session.<yourkey> would be accessible between different API endpoints
 app.use(
   cookieSession({
-    name: "session",
+    name: "session", // -> req.<name>.<key> = <value>
     keys: ["key1", "key2"],
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   })
@@ -24,24 +26,24 @@ app.use(
 //
 
 const goLoginError = function (_res) {
-  return _res.render("urls_error", {
-    loginstatus: null,
-    errorMessage: "login required",
-  });
+  // static function for login error rendering
+  // redirect to login
+  return _res.redirect("/login"); 
 };
 const goDoesNotHaveURL = function (_res) {
-  return _res.render("urls_error", {
+  // static function for user's not having the given url.
+  // 403 Forbidden error
+  return _res.status(403).render("urls_error", {
     loginstatus: null,
     errorMessage: "User does not have the given url.",
   });
 };
 
-//main page without routes
 app.get("/", (req, res) => {
   // hashedemail is login status
   const userHashedEmail = req.session.hashedemail;
   if (userHashedEmail) {
-    res.redirect("/urls");
+    res.redirect("/urls");  // redirect -> hit GET with the given url endpoint = /urls
   } else {
     res.redirect("/login");
   }
