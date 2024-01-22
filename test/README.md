@@ -11,7 +11,7 @@ npx mocha <test_file>.js --grap "\<specific statement in the describe part>"
 ## how can I generate test script by using chatGPT
 testcase: GET /urls/:id, a user should see an error message if they do not own the URL
 - "Considering that I'm using mocha, chai and chai-http, and a session cookie to store the user idss, write a test using the expect syntax with promises for the following case and the agent pattern with promises for the following case:
-I expect that a successful login using the POST request to "http://localhost:8080/login" with the credentials' form with test@test.com as username and test as the password, followed by a GET request done on "http://localhost:3000/urls/b2xVn2" will be met with a status code of 403."
+I expect that a successful login using the POST request to "http://localhost:8080/login" with the credentials' form with test@test.com as username and test as the password, followed by a GET request done on "http://localhost:8080/urls/b2xVn2" will be met with a status code of 403."
 
 testcase: GET /, a user should be redirected to /login if they are not logged in
 - "Considering that I'm using mocha, chai and chai-http, and a session cookie to store the user idss, write a test using the expect syntax with promises for the following case and the agent pattern with promises for the following case:
@@ -27,4 +27,4 @@ I expect that a successful redirction to "http://localhost:8080/login" after the
 
 testcase: GET /u/:id, a user should see an error message if the URL doesn't exist
 - "Considering that I'm using mocha, chai and chai-http, and a session cookie to store the user idss, write a test using the expect syntax with promises for the following case and the agent pattern with promises for the following case:
-I expect that a successful login using the POST request to "http://localhost:8080/login" with the credentials' form with test@test.com as username and test as the password, followed by a GET request done on "http://localhost:3000/u/nothing" will be met with a status code of 404."
+I expect that a successful login using the POST request to "http://localhost:8080/login" with the credentials' form with test@test.com as username and test as the password, followed by a GET request done on "http://localhost:8080/u/youdonothave" will be met with a status code of 404."
